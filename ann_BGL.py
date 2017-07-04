@@ -184,11 +184,21 @@ classifier2.add(Dense(units=1,
 
 # compiling the ANN
 classifier2.compile(optimizer = 'adam', 
-                   loss = 'binary_crossentropy', 
+                   loss = 'mean_squared_logarithmic_error', 
                    metrics = ['accuracy'])
 
 # fit the ANN on the training & testing set
-classifier2.fit(X2_train, y2_train, batch_size = 10, epochs = 100)
+classifier2.fit(X2_train, y2_train, batch_size = 10, epochs = 30)
+
+'''
+Best algorithm thus far: 
+    Input & hidden: relu activation
+    Output: relu or linear activation
+    Loss: MSE function or Mean squared log function
+    
+All activation functions: https://keras.io/activations/
+All loss functions: https://keras.io/losses/
+'''
 
 # Part 3 - Making predictions and evaluating the model ########################
 
@@ -198,3 +208,24 @@ y2_pred = classifier2.predict(X2_test)
 # gives prediction for each observation in test set
 
 # clark error grid
+
+# build the plot grid
+# NB: predicted values must be on the Y axis
+from pylab import *
+import matplotlib.pyplot as plt
+plt.xlim(0,250)
+plt.ylim(0,250)
+fill([38.5,250,250,38.5], [0,0,198,32], 'b', alpha=0.2, edgecolor='r') #B
+fill([0,32,210,0], [38.5,38.5,250,250], 'b', alpha=0.2, edgecolor='r') #B
+
+fill([135,250,250,135], [38.5,38.5,100,100], 'c', alpha=0.5, edgecolor='g') #D
+fill([0,32,32,0], [38.5,38.5,100,100], 'c', alpha=0.5, edgecolor='g') #D
+
+fill([100,250,250,100], [0,0,38.5,38.5], 'b', alpha=0.4, edgecolor='r') #E
+fill([0,32,32,0], [100,100,250,250], 'b', alpha=0.4, edgecolor='r') #E
+
+fill([80,100,100], [0,0,38.5], 'b', alpha=0.2, edgecolor='r') #C
+fill([32,187.5,32], [100,250,250], 'b', alpha=0.2, edgecolor='r') #C
+
+# insert scatter points
+clark = plt.scatter(y2_test, y2_pred)
