@@ -191,7 +191,7 @@ classifier2.add(Dense(units=1,
 
 # compiling the ANN
 classifier2.compile(optimizer = 'adam', 
-                   loss = 'mean_squared_error', 
+                   loss = 'mean_squared_logarithmic_error', 
                    metrics = ['accuracy'])
 
 # fit the ANN on the training & testing set
@@ -256,8 +256,7 @@ Diabetes pedigree function is taken out
 data3 = pd.read_csv("diabetes3.csv")
 diabetes3 = np.array(data3) # convert to numpy array for slicing
 
-# X.dtypes
-
+# split X and y
 X3 = diabetes3[:, 0:7]
 y3 = diabetes3[:, 7]
 
