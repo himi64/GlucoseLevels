@@ -12,7 +12,7 @@ Attributes
    6. Body mass index (weight in kg/(height in m)^2)
    7. Diabetes pedigree function
    8. Age (years)
-   9. Diabetes (0=no or 1=yes)
+   9. [OUTPUT] Diabetes (0=no or 1=yes)
    
 """
 
@@ -87,7 +87,7 @@ classifier.fit(X_train, y_train, batch_size = 10, epochs = 100)
 y_pred = classifier.predict(X_test) 
 # gives prediction for each observation in test set
 # now in y_pred dataframe, it gives answer as true/false, rather than just probability
- 
+
 # set threshold for diabetes where p(diabeties)>0.5 means you have diabetes (1)
 y_pred_bin = []
 for x in y_pred:
@@ -132,7 +132,7 @@ Dataset description:
    6. Diabetes pedigree function
    7. Age (years)
    8. Diabetes (0=no or 1=yes)
-   9. Plasma glucose concentration a 2 hours in an oral glucose tolerance test
+   9. [OUTPUT] Plasma glucose concentration a 2 hours in an oral glucose tolerance test
 '''
 
 # import dataset
@@ -247,7 +247,7 @@ Dataset description:
    5. Body mass index (weight in kg/(height in m)^2)
    6. Age (years)
    7. Diabetes (0=no or 1=yes)
-   8. Plasma glucose concentration a 2 hours in an oral glucose tolerance test
+   8. [OUTPUT] Plasma glucose concentration a 2 hours in an oral glucose tolerance test
    
 Diabetes pedigree function is taken out 
 '''
@@ -349,3 +349,115 @@ fill([32,187.5,32], [100,250,250], 'b', alpha=0.2, edgecolor='r') #C
 
 # insert scatter points
 clark = plt.scatter(y3_test, y3_pred)
+
+### MODEL 4: PREDICTING PLASMA GLUCOSE LEVEL without triceps, pedigree, pregnant, 2hr insulin ###
+
+### DATA PREPROCESSING ########################################################
+
+'''
+Dataset description:
+   1. Diastolic blood pressure (mm Hg)
+   2. BMI
+   3. Age (years)
+   4. Diabetes (0=no or 1=yes)
+   5. [OUTPUT] Plasma glucose concentration a 2 hours in an oral glucose tolerance test
+'''
+
+# import dataset
+data4 = pd.read_csv("diabetes4.csv")
+diabetes4 = np.array(data4) # convert to numpy array for slicing
+
+# X.dtypes
+
+X4 = diabetes4[:, 0:4]
+y4 = diabetes4[:, 4]
+
+
+# split data into training and testing datasets
+from sklearn.model_selection import train_test_split
+X4_train, X4_test, y4_train, y4_test = train_test_split(X4, y4, 
+                                                    test_size = 0.25, 
+                                                    random_state=0)
+
+# feature scaling (required for ANN)
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+X4_train = sc.fit_transform(X4_train)
+X4_test = sc.fit_transform(X4_test)
+
+### BUILD THE ARTIFICIAL NEURAL NETWORK #######################################
+
+import keras
+from keras.models import Sequential
+from keras.layers import Dense
+
+# initialize the ANN
+classifier4 = Sequential()
+
+# add first layer (inputs) - relu is best for unbounded
+classifier4.add(Dense(units = 4, 
+                     kernel_initializer = 'uniform', 
+                     activation = 'relu', 
+                     input_dim = 4))
+                     #NB: (input nodes + output nodes) / 2 = units (# of nodes)
+
+# add second layer
+classifier4.add(Dense(units = 4, 
+                     kernel_initializer = 'uniform',
+                     activation = 'relu'))
+
+# add third layer
+classifier4.add(Dense(units = 4, 
+                     kernel_initializer = 'uniform',
+                     activation = 'relu'))
+
+# add output layer
+classifier4.add(Dense(units=1,
+                     kernel_initializer = 'uniform',
+                     activation = 'linear'))
+
+# compiling the ANN
+classifier4.compile(optimizer = 'adam', 
+                   loss = 'mean_squared_logarithmic_error', 
+                   metrics = ['accuracy'])
+
+# fit the ANN on the training & testing set
+classifier4.fit(X4_train, y4_train, batch_size = 10, epochs = 100)
+
+'''   
+All activation functions: https://keras.io/activations/
+All loss functions: https://keras.io/losses/
+'''
+
+# Part 3 - Making predictions and evaluating the model ########################
+
+# Predicting the Test set results
+y4_pred = classifier4.predict(X4_test) 
+
+# clark error grid
+
+# build the plot grid
+# NB: predicted values must be on the Y axis
+from pylab import *
+import matplotlib.pyplot as plt
+plt.xlim(0,250)
+plt.ylim(0,250)
+plt.title('Clark Error Grid of Algorithm Accuracy')
+plt.xlabel('Actual Plasma Glucose Level')
+plt.ylabel('Predicted Plasma Glucose Level')
+
+fill([38.5,250,250,38.5], [0,0,198,32], 'b', alpha=0.2, edgecolor='r') #B
+fill([0,32,210,0], [38.5,38.5,250,250], 'b', alpha=0.2, edgecolor='r') #B
+
+fill([135,250,250,135], [38.5,38.5,100,100], 'c', alpha=0.5, edgecolor='g') #D
+fill([0,32,32,0], [38.5,38.5,100,100], 'c', alpha=0.5, edgecolor='g') #D
+
+fill([100,250,250,100], [0,0,38.5,38.5], 'b', alpha=0.4, edgecolor='r') #E
+fill([0,32,32,0], [100,100,250,250], 'b', alpha=0.4, edgecolor='r') #E
+
+fill([80,100,100], [0,0,38.5], 'b', alpha=0.2, edgecolor='r') #C
+fill([32,187.5,32], [100,250,250], 'b', alpha=0.2, edgecolor='r') #C
+
+# insert scatter points
+clark = plt.scatter(y4_test, y4_pred)
